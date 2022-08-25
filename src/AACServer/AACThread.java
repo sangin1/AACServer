@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+
 public class AACThread extends Thread{
 	final static String dbconnect = "jdbc:mysql://localhost:3306/accdb?useUnicode=true&serverTimezone=UTC";
 	private Socket socket;
@@ -157,6 +158,58 @@ public class AACThread extends Thread{
 					imagelist.setLength(0);
 					imagelist2.setLength(0);
 					classCode.setLength(0);
+				}else if(input[0].equals("addmember")==true){
+					String check="0";
+					try(Connection conn = DriverManager.getConnection(
+							dbconnect,"root","1234");
+						Statement stmt = conn.createStatement();
+						 
+						ResultSet rs = stmt.executeQuery(String.format("select * from login where id='%s'",
+								input[1]));
+					){
+						if(rs.next()){ 
+							check="1";
+							out.println(check);
+							out.flush();
+							continue;
+						}
+
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+					
+					try(Connection conn = DriverManager.getConnection(
+							dbconnect,"root","1234");
+						Statement stmt = conn.createStatement();
+					){
+						stmt.executeUpdate(String.format("insert into login(id, pw) value ('%s', '%s')",
+								input[1],input[2]));
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+					out.println(check);
+					out.flush();
+				}else if(input[0].equals("login")==true){
+					String idCode = "0"; 
+					try(Connection conn = DriverManager.getConnection(
+							dbconnect,"root","1234");
+						Statement stmt = conn.createStatement();
+						 
+						ResultSet rs = stmt.executeQuery(String.format("select * from login where id='%s' and pw='%s'",
+								input[1],input[2]));
+					){
+						if(rs.next()){ 
+							idCode = rs.getString("idCode");
+							out.println(idCode);
+							out.flush();
+							continue;
+						}
+
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+					out.println("0");
+					out.flush();
 				}
 				
 			}
