@@ -9,6 +9,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -16,6 +19,19 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 
@@ -57,7 +73,7 @@ public class AACThread extends Thread{
 				if(input[0].equals("1")==true){
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
-						Statement stmt = conn.createStatement();						 
+						Statement stmt = conn.createStatement();	
 						ResultSet rs = stmt.executeQuery("select * from class where idCode = 1");
 					){
 						while(rs.next()){
@@ -90,9 +106,11 @@ public class AACThread extends Thread{
 					}
 					out.println(classlist);
 					out.flush();
+					
+					classlist.setLength(0);
+				}else if(input[0].equals("12")==true){
 					out.println(classCode);
 					out.flush();
-					classlist.setLength(0);
 				}else if(input[0].equals("2")==true){
 					result = classCode.toString().split("-");
 					for(i=0;i<result.length;i++) {
@@ -167,15 +185,15 @@ public class AACThread extends Thread{
 					out.println(len);
 					out.flush();
 					
-					out.println(imagelist2);
-					out.flush();
-					
-					
 					imageall.setLength(0);
 					imagelist.setLength(0);
-					imagelist2.setLength(0);
 					classCode.setLength(0);
-				}else if(input[0].equals("addmember")==true){
+				}else if(input[0].equals("32")==true){
+					out.println(imagelist2);
+					out.flush();
+					imagelist2.setLength(0);
+				}
+				else if(input[0].equals("addmember")==true){
 					String check="0";
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
@@ -407,8 +425,24 @@ public class AACThread extends Thread{
 					wordlist.setLength(0);
 					wordlist2.setLength(0);
 					classCode.setLength(0);
-				}
-				
+				}else if(input[0].equals("cword")==true){
+					String cword = "";
+					int k,j;
+					for(k=0;k<10;k++) {
+						for(j=0;j<10;j++) {
+							cword+=createWord();
+							cword+="-";
+						}
+						cword+="--";
+					}
+					out.println(cword);
+					out.flush();
+				}else if(input[0].equals("wordCheck")==true){
+					String wordc = input[1];
+					int result = checkWord(wordc);
+					out.println(Integer.toString(result));
+					out.flush();
+				}					
 			}
 		}catch(IOException e) { 
 			System.out.println("클라이언트 처리실패"+e);
@@ -418,7 +452,96 @@ public class AACThread extends Thread{
 			}catch(IOException e) {
 				System.out.println("소켓종료오류 "+e);
 			} 
+		}		
+	}
+	public int checkWord(String word) {
+		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			public X509Certificate[] getAcceptedIssuers() {return null;}
+	        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+	        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+	     }};
+		try {
+			SSLContext sc;
+			sc = SSLContext.getInstance("SSL");
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			String url = "https://stdict.korean.go.kr/api/search.do?certkey_no=4440&key=26615A34353C0D5A03B4905843A63EE6&type_search=search&req_type=xml&q="+word;
+			DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
+			Document doc = dBuilder.parse(url);
+			doc.getDocumentElement().normalize();
+			NodeList nList = doc.getElementsByTagName("channel");
+			Node nNode = nList.item(0);
+			if(nNode.getNodeType() == Node.ELEMENT_NODE){				
+				Element eElement = (Element) nNode;
+				NodeList nlList = eElement.getElementsByTagName("total").item(0).getChildNodes();
+				Node nValue = (Node) nlList.item(0);
+				if(Integer.parseInt(nValue.getNodeValue())>0) {
+					return 1;
+				}else {				
+					return 0;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		return 0;
+	}
+	public String createWord() {
+		int word = 0;
+		int one = 0;
+		int two = 0;
+		int three = 0;
+		Random random = new Random();
+		one=random.nextInt(19);
+		while(true) {
+			two=random.nextInt(22);
+			if(two==3 || two==7 || two==15 || two==10)
+				continue;
+			break;
+		}		
+		if(random.nextInt(2)==1) {
+			three=random.nextInt(8);
+			switch(three){			
+				case 0:
+					three = 1;
+					break;
+				case 1:
+					three = 4;
+					break;
+				case 2: 
+					three = 7;
+					break;
+				case 3: 
+					three = 8;
+					break;
+				case 4: 
+					three = 16;
+					break;
+				case 5: 
+					three = 17;
+					break;
+				case 6: 
+					three = 19;
+					break;	
+				case 7: 
+					three = 21;
+					break;
+			}
+		}else {
+			three=0;
 		}
-		
+		switch(one) {
+			case 1: case 4: case 8: case 10: case 13:
+				three = 0;
+				break;
+		}
+		switch(two) {
+			case 1: case 2: case 3: case 5: case 7: case 9: case 10: case 11: case 14: case 15: case 16: case 17: case 19:
+				three = 0;
+				break;
+		}
+		word = (one * 21 * 28) + (two * 28) + three;
+		return String.valueOf((char)(word + 0xAC00));
 	}
 }
