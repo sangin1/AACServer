@@ -70,7 +70,9 @@ public class AACThread extends Thread{
 					break;
 				}
 				String[] input = a.split("--");
-				if(input[0].equals("1")==true){
+				if(input[1].equals("1")==true){
+					classCode.setLength(0);
+					classlist.setLength(0);
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 						Statement stmt = conn.createStatement();	
@@ -86,11 +88,11 @@ public class AACThread extends Thread{
 					}catch(Exception e){
 						e.printStackTrace();
 					}
-					if(input[1].equals("1")!=true) {
+					if(input[2].equals("1")!=true) {
 						try(Connection conn = DriverManager.getConnection(
 								dbconnect,"root","1234");
 							Statement stmt = conn.createStatement();					 
-							ResultSet rs = stmt.executeQuery(String.format("select * from class where idCode = %s",input[1]));
+							ResultSet rs = stmt.executeQuery(String.format("select * from class where idCode = %s",input[2]));
 						){
 							while(rs.next()){
 									classlist.append(rs.getString("class"));
@@ -107,11 +109,10 @@ public class AACThread extends Thread{
 					out.println(classlist);
 					out.flush();
 					
-					classlist.setLength(0);
-				}else if(input[0].equals("12")==true){
+				}else if(input[1].equals("12")==true){
 					out.println(classCode);
 					out.flush();
-				}else if(input[0].equals("2")==true){
+				}else if(input[1].equals("2")==true){
 					result = classCode.toString().split("-");
 					for(i=0;i<result.length;i++) {
 						try(Connection conn = DriverManager.getConnection(
@@ -144,7 +145,7 @@ public class AACThread extends Thread{
 					wordlist.setLength(0);
 					wordlist2.setLength(0);
 					
-				}else if(input[0].equals("3")==true){
+				}else if(input[1].equals("3")==true){
 					result = classCode.toString().split("-");
 					for(i=0;i<result.length;i++) {
 						try(Connection conn = DriverManager.getConnection(
@@ -188,19 +189,19 @@ public class AACThread extends Thread{
 					imageall.setLength(0);
 					imagelist.setLength(0);
 					classCode.setLength(0);
-				}else if(input[0].equals("32")==true){
+				}else if(input[1].equals("32")==true){
 					out.println(imagelist2);
 					out.flush();
 					imagelist2.setLength(0);
 				}
-				else if(input[0].equals("addmember")==true){
+				else if(input[1].equals("addmember")==true){
 					String check="0";
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 						Statement stmt = conn.createStatement();
 						 
 						ResultSet rs = stmt.executeQuery(String.format("select * from login where id='%s'",
-								input[1]));
+								input[2]));
 					){
 						if(rs.next()){ 
 							check="1";
@@ -218,20 +219,20 @@ public class AACThread extends Thread{
 						Statement stmt = conn.createStatement();
 					){
 						stmt.executeUpdate(String.format("insert into login(id, pw) value ('%s', '%s')",
-								input[1],input[2]));
+								input[2],input[3]));
 					}catch(Exception e){
 						e.printStackTrace();
 					}
 					out.println(check);
 					out.flush();
-				}else if(input[0].equals("login")==true){
+				}else if(input[1].equals("login")==true){
 					String idCode = "0"; 
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 						Statement stmt = conn.createStatement();
 						 
 						ResultSet rs = stmt.executeQuery(String.format("select * from login where id='%s' and pw='%s'",
-								input[1],input[2]));
+								input[2],input[3]));
 					){
 						if(rs.next()){ 
 							idCode = rs.getString("idCode");
@@ -245,13 +246,13 @@ public class AACThread extends Thread{
 					}
 					out.println("0");
 					out.flush();
-				}else if(input[0].equals("addword")==true){					
+				}else if(input[1].equals("addword")==true){					
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 						Statement stmt = conn.createStatement();
 					){
 						stmt.executeUpdate(String.format("insert into word(idCode, word, classCode) value (%s, '%s', %s)",
-								input[3],input[2],input[1]));
+								input[4],input[3],input[2]));
 					}catch(Exception e){
 						e.printStackTrace();
 						out.println('0');
@@ -259,11 +260,11 @@ public class AACThread extends Thread{
 					}
 					out.println('1');
 					out.flush();
-				}else if(input[0].equals("updateword")==true){					
+				}else if(input[1].equals("updateword")==true){					
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234"); 			
 							PreparedStatement pstmt = conn.prepareStatement(String.format("update word set word = '%s' where word = '%s' and idCode = %s and classCode = %s",
-									input[2], input[4], input[3], input[1]));				
+									input[3], input[5], input[4], input[2]));				
 					){ 		 
 						pstmt.executeUpdate();   
 						 
@@ -274,14 +275,14 @@ public class AACThread extends Thread{
 					}
 					out.println('1');
 					out.flush();
-				}else if(input[0].equals("delword")==true){					
+				}else if(input[1].equals("delword")==true){					
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 							Statement stmt = conn.createStatement();
 							
 					){ 		
 						stmt.execute(String.format("delete from word where idCode = %s and word = '%s' and classCode = %s",
-								input[3],input[2],input[1]));
+								input[4],input[3],input[2]));
 					}catch(Exception e){
 						e.printStackTrace();
 						out.println('0');
@@ -289,14 +290,14 @@ public class AACThread extends Thread{
 					}
 					out.println('1');
 					out.flush();
-				}else if(input[0].equals("addclass")==true){
+				}else if(input[1].equals("addclass")==true){
 					String classCode = "";
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 						Statement stmt = conn.createStatement();
 						 
 						ResultSet rs = stmt.executeQuery(String.format("select * from class where idCode = %s and class = '%s'",
-								input[3], input[1]));
+								input[4], input[2]));
 					){
 						if(rs.next()){ 
 							out.println('1');
@@ -311,7 +312,7 @@ public class AACThread extends Thread{
 						Statement stmt = conn.createStatement();
 					){
 						stmt.executeUpdate(String.format("insert into class(class,idCode) value ('%s', %s)",
-								input[1],input[3]));
+								input[2],input[4]));
 					}catch(Exception e){
 						e.printStackTrace();
 					}
@@ -320,7 +321,7 @@ public class AACThread extends Thread{
 						Statement stmt = conn.createStatement();
 						 
 						ResultSet rs = stmt.executeQuery(String.format("select * from class where idCode = %s and class = '%s'",
-								input[3], input[1]));
+								input[4], input[2]));
 					){
 						if(rs.next()){ 
 							classCode = rs.getString("classCode");
@@ -333,18 +334,18 @@ public class AACThread extends Thread{
 						Statement stmt = conn.createStatement();
 					){
 						stmt.executeUpdate(String.format("insert into word(idCode, word, classCode) value (%s, '%s', %s)",
-								input[3],input[2],classCode));
+								input[4],input[3],classCode));
 					}catch(Exception e){
 						e.printStackTrace();
 						
 					}
 					out.println('0');
 					out.flush();
-				}else if(input[0].equals("updateclass")==true){					
+				}else if(input[1].equals("updateclass")==true){					
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234"); 			
 							PreparedStatement pstmt = conn.prepareStatement(String.format("update class set class = '%s' where idCode = %s and classCode = %s",
-									input[2], input[3], input[1]));				
+									input[3], input[4], input[2]));				
 					){ 		 
 						pstmt.executeUpdate();   
 						 
@@ -355,22 +356,22 @@ public class AACThread extends Thread{
 					}
 					out.println('1');
 					out.flush();
-				}else if(input[0].equals("delclass")==true){					
+				}else if(input[1].equals("delclass")==true){					
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 							Statement stmt = conn.createStatement();
 							
 					){ 		
 						stmt.execute(String.format("delete from class where idCode = %s and classCode = %s",
-								input[1],input[2]));
+								input[2],input[3]));
 					}catch(Exception e){
 						e.printStackTrace();
 					}
-				}else if(input[0].equals("upin")==true){
+				}else if(input[1].equals("upin")==true){
 					try(Connection conn = DriverManager.getConnection(
 							dbconnect,"root","1234");
 						Statement stmt = conn.createStatement();						 
-						ResultSet rs = stmt.executeQuery(String.format("select * from class where idCode = %s",input[1]));
+						ResultSet rs = stmt.executeQuery(String.format("select * from class where idCode = %s",input[2]));
 					){
 						if(rs.next()){
 							classlist.append(rs.getString("class"));
@@ -398,7 +399,7 @@ public class AACThread extends Thread{
 					out.println(classCode);
 					out.flush();
 					classlist.setLength(0);
-				}else if(input[0].equals("upin2")==true){
+				}else if(input[1].equals("upin2")==true){
 					result = classCode.toString().split("-");
 					for(i=0;i<result.length;i++) {
 						try(Connection conn = DriverManager.getConnection(
@@ -425,20 +426,17 @@ public class AACThread extends Thread{
 					wordlist.setLength(0);
 					wordlist2.setLength(0);
 					classCode.setLength(0);
-				}else if(input[0].equals("cword")==true){
+				}else if(input[1].equals("cword")==true){
 					String cword = "";
 					int k,j;
-					for(k=0;k<10;k++) {
-						for(j=0;j<10;j++) {
-							cword+=createWord();
-							cword+="-";
-						}
-						cword+="--";
+					for(j=0;j<49;j++) {
+						cword+=createWord();
+						cword+="-";
 					}
 					out.println(cword);
 					out.flush();
-				}else if(input[0].equals("wordCheck")==true){
-					String wordc = input[1];
+				}else if(input[1].equals("wordCheck")==true){
+					String wordc = input[2];
 					int result = checkWord(wordc);
 					out.println(Integer.toString(result));
 					out.flush();
@@ -447,6 +445,7 @@ public class AACThread extends Thread{
 		}catch(IOException e) { 
 			System.out.println("클라이언트 처리실패"+e);
 		}finally {
+			System.out.println("end");
 			try {
 				socket.close();
 			}catch(IOException e) {
@@ -494,9 +493,12 @@ public class AACThread extends Thread{
 		int three = 0;
 		Random random = new Random();
 		one=random.nextInt(19);
+		if(one==10) {
+			one=0;
+		}
 		while(true) {
 			two=random.nextInt(22);
-			if(two==3 || two==7 || two==15 || two==10)
+			if(two==3 || two==7 || two==15 || two==10|| two==2|| two==6|| two==11|| two==12|| two==14|| two==16|| two==17|| two==19)
 				continue;
 			break;
 		}		
@@ -531,15 +533,11 @@ public class AACThread extends Thread{
 		}else {
 			three=0;
 		}
-		switch(one) {
-			case 1: case 4: case 8: case 10: case 13:
-				three = 0;
-				break;
+		if(one==1||one==4||one==8||one==10||one==13) {
+			three = 0;
 		}
-		switch(two) {
-			case 1: case 2: case 3: case 5: case 7: case 9: case 10: case 11: case 14: case 15: case 16: case 17: case 19:
-				three = 0;
-				break;
+		if(two==1||two==2||two==3||two==5||two==7||two==9||two==10||two==11||two==14||two==15||two==16||two==17||two==19) {
+			three = 0;
 		}
 		word = (one * 21 * 28) + (two * 28) + three;
 		return String.valueOf((char)(word + 0xAC00));
