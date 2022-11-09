@@ -13,7 +13,6 @@ public class AACServer {
 		try {
 			while(true) { 
 				AACThread t = new AACThread(ss.accept());
-				System.out.println("new");
 				t.start();
 			}
 		}finally {

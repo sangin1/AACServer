@@ -144,7 +144,7 @@ public class AACThread extends Thread{
 					allword.setLength(0);
 					wordlist.setLength(0);
 					wordlist2.setLength(0);
-					
+					classlist.setLength(0);
 				}else if(input[1].equals("3")==true){
 					result = classCode.toString().split("-");
 					for(i=0;i<result.length;i++) {
@@ -440,12 +440,26 @@ public class AACThread extends Thread{
 					int result = checkWord(wordc);
 					out.println(Integer.toString(result));
 					out.flush();
+				}else if(input[1].equals("imgadd")==true){
+					try(Connection conn = DriverManager.getConnection(
+							dbconnect,"root","1234"); 			
+							PreparedStatement pstmt = conn.prepareStatement(String.format("update word set image = '%s' where word = '%s' and idCode = %s and classCode = %s",
+									input[3], input[5], input[4], input[2]));				
+					){ 		 
+						pstmt.executeUpdate();   
+						 
+					}catch(Exception e){
+						e.printStackTrace();
+						out.println('0');
+						out.flush();
+					}
+					out.println('1');
+					out.flush();
 				}					
 			}
 		}catch(IOException e) { 
 			System.out.println("클라이언트 처리실패"+e);
 		}finally {
-			System.out.println("end");
 			try {
 				socket.close();
 			}catch(IOException e) {
